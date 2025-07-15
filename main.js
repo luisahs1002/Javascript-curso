@@ -1,71 +1,81 @@
 // alert("Esta bien linkeado");
 
-// Formula 1 - simulador de puntos 
 function iniciar(){
-    console.log("Bienvenido a la formula 1!!!");
+    console.log("Bienvenido a la Formula 1 !!!");
 }
 
-const maximo_de_vueltas = 10;
-const puntos_por_posicion= [25,18,15,12,10,8,6,4,2,1];
+// Array con equipos y sus pilotos
 
-let pilotos = [
-    {nro: 1, nombre: "hamilton", escuderia:"ferrari", puntos: 0},
-    {nro: 2, nombre: "leclerc", escuderia:"ferrari", puntos: 0},
-    {nro: 3, nombre: "verstapen", escuderia:"redbull", puntos: 0},
-    {nro: 4, nombre: "norris", escuderia:"mclaren", puntos: 0},
-    {nro: 5, nombre: "piastri", escuderia:"mclaren", puntos: 0},
-    {nro: 6, nombre: "alonso", escuderia:"aston martin", puntos: 0},
-    {nro: 7, nombre: "russell", escuderia:"mercedes", puntos: 0},
-    {nro: 8, nombre: "sainz", escuderia:"williams", puntos: 0},
-    {nro: 9, nombre: "colapinto", escuderia:"alpine", puntos: 0},
-    {nro: 10,nombre: "albon", escuderia:"williams", puntos: 0}
+let equipos=[
+    {
+        nombre:"Ferrari",
+        pais: "Italia",
+        pilotos:[
+            {nombre: "Lewis Hamilton", puntos: 0},
+            {nombre: "Charles Lecrec", puntos:0},
+        ]
+    },
+    {
+        nombre:"Mclaren",
+        pais:"Reino Unido",
+        pilotos:[
+            {nombre:"Lando Norris", puntos: 0},
+            {nombre:"Oscar Piastri", puntos:0},
+        ],
+    },
+    {
+        nombre:"Redbull",
+        pais:"Austria",
+        pilotos:[
+            {nombre:"Max Verstapen", puntos: 0},
+            {nombre:"Yuki Tsunoda", puntos: 0},
+        ]
+    },
+    {
+        nombre:"Mercedes AMG",
+        pais: "Alemania",
+        pilotos:[
+            {nombre: "George Russell", puntos: 0},
+            {nombre:"Kimi Antonelli", puntos: 0},
+         ],
+    },
+    {
+        nombre: "Aston Martin",
+        pais:"Reino Unido",
+        pilotos:[
+            {nombre:"Fernando Alonso", puntos:0},
+            {nombre:"Lance Stroll", puntos:0},
+        ]
+    }
+]
 
-];
+// Mostrar todos los equipos y sus pilotos
 
-// mostrar todos los pilotos
-
-function mostrar_parrilla(){
-    console.log("ESTA ES LA PARRILLA DE LA FORMULA 1 ACTUAL:");
-    pilotos.forEach(piloto => {
-        console.table(`#${piloto.nro} - ${piloto.nombre} | Escudería: ${piloto.escuderia} | Puntos: ${piloto.puntos}`);
+function mostrarEquipos(){
+    console.log("🏁 Escuderias de la Fórmula 1:");
+    equipos.forEach(equipo => {
+        console.log(`\nEscudería: ${equipo.nombre} (${equipo.nacionalidad})`);
+        equipo.pilotos.forEach((piloto, index) => {
+            console.log(`  Piloto ${index + 1}: ${piloto.nombre} | Puntos: ${piloto.puntos}`);
+        });
     });
 }
-mostrar_parrilla()
+mostrarEquipos();
 
+// Buscar equipo por nombre desde prompt
 
+let nombreEquipo = prompt(" Escribe el nombre de un equipo (EJ: Ferrari, Redbull;mclaren): ");
+let equipoEncontrado = equipos.find(equipo => equipo.nombre.toLocaleLowerCase() === nombreEquipo.toLocaleLowerCase());
 
-// Mostrar listado de pilotos
-let mensaje = "Elige un número del 1 al 10 para seleccionar un piloto:\n";
-pilotos.forEach(p => {
-    mensaje += `${p.nro} - ${p.nombre} (${p.escuderia})\n`;
-});
-
-// Solicitar número de piloto
-let numeroElegido = parseInt(prompt(mensaje));
-
-// Buscar piloto seleccionado
-let pilotoSeleccionado = pilotos.find(piloto => piloto.nro === numeroElegido);
-
-// Mostrar resultado
-if (pilotoSeleccionado) {
-    alert(`Has seleccionado a ${pilotoSeleccionado.nombre} de la escudería ${pilotoSeleccionado.escuderia}`);
-    console.log(`PILOTO ELEGIDO: ${pilotoSeleccionado.nombre} (${pilotoSeleccionado.escuderia})`);
+if( equipoEncontrado){
+    console.log(`\n✅ Has seleccionado: ${equipoEncontrado.nombre}`);
+    console.log(`🌍 Nacionalidad: ${equipoEncontrado.nacionalidad}`);
+    console.log("Pilotos:");
+    equipoEncontrado.pilotos.forEach(piloto => {
+        console.log(`- ${piloto.nombre} | Puntos: ${piloto.puntos}`);
+    });
 } else {
-    alert("Número inválido. Debes elegir un número entre 1 y 10.");
-}
-
-// preferencias del usuario
-function tus_preferencias(nombre, apellido, escuderia_fav, piloto_fav){
-    console.log(nombre, apellido, escuderia_fav,piloto_fav)
-}
-
-tus_preferencias("luis","hernandez","ferrari","lecrec")
-
-
-
-if (pilotoSeleccionado.nro > 0){
-    console.log("Excelente piloto !!!")
-}else{
-    console.log("INCORRECTO")
+    console.log("❌ Equipo no encontrado. Asegúrate de escribirlo correctamente.");
+    
 }
 
