@@ -1,29 +1,552 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Escuderías F1 - Gestión de Equipos</title>
+    <meta name="description" content="Aplicación web para gestionar y visualizar equipos de Fórmula 1 con funcionalidades avanzadas de búsqueda y persistencia de datos.">
+    <meta name="keywords" content="Fórmula 1, F1, equipos, escuderías, Red Bull, Ferrari, Mercedes, McLaren">
+    <meta name="author" content="Proyecto F1">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SweetAlert2 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Loglevel -->
+    <script src="https://cdn.jsdelivr.net/npm/loglevel@1.8.1/dist/loglevel.min.js"></script>
+    
     <link rel="stylesheet" href="css/style.css">
-    <script defer src="main.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏎</text></svg>">
 </head>
-<body>
-    <main>
-        <h1>
-            Curso de Javascript
-        </h1>
+<body class="bg-gray-900 text-white min-h-screen">
+    <header class="bg-red-600 py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold text-center">🏎 Escuderías F1</h1>
+            <p class="text-center mt-2 text-red-100">Con logos oficiales de equipos y banderas de países</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Controles -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <button 
+                id="btnMostrarEquipos" 
+                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl shadow-lg transition-colors duration-200"
+                aria-label="Mostrar todos los equipos de F1">
+                Mostrar Equipos
+            </button>
+            
+            <div class="relative w-full max-w-md">
+                <input 
+                    type="search" 
+                    id="buscadorEquipos" 
+                    placeholder="Buscar equipo..." 
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    aria-label="Buscar equipos por nombre">
+            </div>
+        </div>
+
+        <!-- Contenedor de equipos -->
+        <div id="equiposContainer" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
     </main>
 
+    <footer class="bg-gray-800 py-4 mt-12">
+        <div class="container mx-auto px-4 text-center text-gray-400">
+            <p>Proyecto F1 - Gestión de Escuderías</p>
+            
+        </div>
+    </footer>
 
+    <script>
+        // Configurar logger para producción
+        const logger = {
+            info: (...args) => log.info(...args),
+            warn: (...args) => log.warn(...args),
+            error: (...args) => log.error(...args)
+        };
 
+        // Configurar loglevel (solo warnings y errors en producción)
+        log.setLevel('warn');
 
+        // Datos semilla de equipos F1 con imágenes
+        const F1_TEAMS_SEED = [
+            { 
+                id: "red-bull", 
+                name: "Red Bull Racing", 
+                country: "Austria",
+                teamImage: "images/teams/redbull.jpeg",
+                flagImage: "https://flagcdn.com/w40/at.png",
+                primaryColor: "#3671C6",
+                secondaryColor: "#1E41CE"
+            },
+            { 
+                id: "mercedes", 
+                name: "Mercedes-AMG", 
+                country: "Germany",
+                teamImage: "images/teams/mercedes.jpeg",
+                flagImage: "https://flagcdn.com/w40/de.png",
+                primaryColor: "#6CD3BF",
+                secondaryColor: "#00D2BE"
+            },
+            { 
+                id: "ferrari", 
+                name: "Scuderia Ferrari", 
+                country: "Italy",
+                teamImage: "images/teams/Ferrari.jpeg",
+                flagImage: "https://flagcdn.com/w40/it.png",
+                primaryColor: "#DC0000",
+                secondaryColor: "#FF2800"
+            },
+            { 
+                id: "mclaren", 
+                name: "McLaren", 
+                country: "UK",
+                teamImage: "images/teams/McLaren.jpeg",
+                flagImage: "https://flagcdn.com/w40/gb.png",
+                primaryColor: "#FF8700",
+                secondaryColor: "#FF6B35"
+            },
+            { 
+                id: "aston-martin", 
+                name: "Aston Martin", 
+                country: "UK",
+                teamImage: "images/teams/logo-aston-martin.jpeg",
+                flagImage: "https://flagcdn.com/w40/gb.png",
+                primaryColor: "#358C75",
+                secondaryColor: "#006F62"
+            },
+            { 
+                id: "alpine", 
+                name: "Alpine", 
+                country: "France",
+                teamImage: "images/teams/alpine.logo.jpeg",
+                flagImage: "https://flagcdn.com/w40/fr.png",
+                primaryColor: "#0090FF",
+                secondaryColor: "#0051FF"
+            },
+            { 
+                id: "williams", 
+                name: "Williams", 
+                country: "UK",
+                teamImage: "images/teams/williams-logo.jpeg",
+                flagImage: "https://flagcdn.com/w40/gb.png",
+                primaryColor: "#37BEDD",
+                secondaryColor: "#005AFF"
+            },
+            { 
+                id: "rb", 
+                name: "Visa Cash App RB", 
+                country: "Italy",
+                teamImage: "images/teams/kick-logo.jpeg",
+                flagImage: "https://flagcdn.com/w40/it.png",
+                primaryColor: "#5E8FAA",
+                secondaryColor: "#1E41CE"
+            },
+            { 
+                id: "sauber", 
+                name: "Stake F1 Team Sauber", 
+                country: "Switzerland",
+                teamImage: "images/teams/kick-logo.jpeg",
+                flagImage: "https://flagcdn.com/w40/ch.png",
+                primaryColor: "#52E252",
+                secondaryColor: "#37BEDD"
+            },
+            { 
+                id: "haas", 
+                name: "Haas F1 Team", 
+                country: "USA",
+                teamImage: "images/teams/haas-logo.jpeg",
+                flagImage: "https://flagcdn.com/w40/us.png",
+                primaryColor: "#FFFFFF",
+                secondaryColor: "#F0D787"
+            }
+        ];
 
+        // Servicio de almacenamiento
+        const storage = {
+            getTeams() {
+                try {
+                    const teamsData = localStorage.getItem("f1_teams");
+                    if (teamsData) {
+                        const teams = JSON.parse(teamsData);
+                        logger.info(`Equipos cargados: ${teams.length}`);
+                        return teams;
+                    }
+                    
+                    // Fallback para datos legacy
+                    const legacyData = localStorage.getItem("equipos");
+                    if (legacyData) {
+                        const legacyTeams = JSON.parse(legacyData);
+                        logger.info(`Datos legacy encontrados: ${legacyTeams.length}`);
+                        return legacyTeams;
+                    }
+                    
+                    logger.warn("No se encontraron equipos en localStorage");
+                    return [];
+                } catch (error) {
+                    logger.error("Error al cargar equipos:", error);
+                    return [];
+                }
+            },
 
+            setTeams(teams) {
+                try {
+                    localStorage.setItem("f1_teams", JSON.stringify(teams));
+                    logger.info(`Equipos guardados: ${teams.length}`);
+                } catch (error) {
+                    logger.error("Error al guardar equipos:", error);
+                    throw error;
+                }
+            },
 
+            seedIfEmpty() {
+                try {
+                    const existingTeams = this.getTeams();
+                    
+                    if (existingTeams.length === 0) {
+                        this.setTeams(F1_TEAMS_SEED);
+                        logger.info(`Datos semilla inicializados: ${F1_TEAMS_SEED.length} equipos`);
+                        return true;
+                    }
+                    
+                    logger.info("Datos ya existen en localStorage");
+                    return false;
+                } catch (error) {
+                    logger.error("Error al inicializar datos semilla:", error);
+                    throw error;
+                }
+            }
+        };
 
+        // Función debounce
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
 
+        // Funciones de renderizado
+        const render = {
+            renderTeams(teams, container) {
+                try {
+                    logger.info(`Renderizando ${teams.length} equipos`);
+                    
+                    if (!teams || teams.length === 0) {
+                        this.renderEmptyState("No hay equipos disponibles", container);
+                        return;
+                    }
+                    
+                    container.innerHTML = "";
+                    
+                    teams.forEach(team => {
+                        const card = this.createTeamCard(team);
+                        container.appendChild(card);
+                    });
+                    
+                    logger.info("Equipos renderizados exitosamente");
+                } catch (error) {
+                    logger.error("Error al renderizar equipos:", error);
+                    this.renderEmptyState("Error al cargar los equipos", container);
+                }
+            },
 
+            renderEmptyState(message, container) {
+                try {
+                    logger.info(`Renderizando estado vacío: ${message}`);
+                    
+                    container.innerHTML = `
+                        <div class="col-span-full flex flex-col items-center justify-center py-12">
+                            <div class="text-gray-400 text-center">
+                                <div class="text-6xl mb-4">🏎</div>
+                                <h3 class="text-xl font-semibold mb-2">${message}</h3>
+                                <p class="text-sm">Intenta con otra búsqueda o carga los equipos</p>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    logger.error("Error al renderizar estado vacío:", error);
+                    container.innerHTML = "<p class='text-red-500'>Error al mostrar mensaje</p>";
+                }
+            },
 
-    
+            renderLoadingState(container) {
+                try {
+                    logger.info("Renderizando estado de carga");
+                    
+                    container.innerHTML = `
+                        <div class="col-span-full flex flex-col items-center justify-center py-12">
+                            <div class="text-gray-400 text-center">
+                                <div class="text-6xl mb-4 animate-pulse">🏎</div>
+                                <h3 class="text-xl font-semibold mb-2">Cargando equipos...</h3>
+                                <div class="flex space-x-2 justify-center">
+                                    <div class="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
+                                    <div class="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                    <div class="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    logger.error("Error al renderizar estado de carga:", error);
+                    container.innerHTML = "<p class='text-red-500'>Error al mostrar carga</p>";
+                }
+            },
+
+            createTeamCard(team) {
+                const card = document.createElement("div");
+                card.className = "bg-gray-800 rounded-2xl border border-gray-700 p-6 shadow-lg hover:shadow-xl transition-all duration-200 hover:border-gray-600 overflow-hidden";
+                
+                // Determinar si es formato nuevo o legacy
+                const isNewFormat = team.hasOwnProperty('name') && team.hasOwnProperty('country');
+                
+                if (isNewFormat) {
+                    // Formato nuevo: { id, name, country, teamImage, flagImage, primaryColor, secondaryColor }
+                    const primaryColor = team.primaryColor || "#4F46E5";
+                    const secondaryColor = team.secondaryColor || "#3730A3";
+                    
+                    card.innerHTML = `
+                        <div class="relative">
+                            <!-- Header con imagen del equipo -->
+                            <div class="flex items-center justify-center mb-4">
+                                <div class="team-logo-container">
+                                    <img 
+                                        src="${team.teamImage}" 
+                                        alt="${team.name} logo" 
+                                        class="team-logo"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                        onload="console.log('Team logo loaded:', this.src)"
+                                    />
+                                    <div class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg" style="display: none;">
+                                        ${team.name.charAt(0)}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Nombre del equipo -->
+                            <h3 class="text-xl font-bold text-white mb-3 text-center">${team.name}</h3>
+                            
+                            <!-- País con bandera -->
+                            <div class="flex items-center justify-center gap-2 mb-4">
+                                <div class="flag-container">
+                                    <img 
+                                        src="${team.flagImage}" 
+                                        alt="${team.country} flag" 
+                                        class="flag-image"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                        onload="console.log('Flag loaded:', this.src)"
+                                    />
+                                    <div class="w-full h-full bg-gray-600 flex items-center justify-center text-white text-xs" style="display: none;">
+                                        🌍
+                                    </div>
+                                </div>
+                                <span class="text-gray-300 text-sm">${team.country}</span>
+                            </div>
+                            
+                            <!-- ID del equipo con colores del equipo -->
+                            <div class="mt-4 text-center">
+                                <span class="inline-block text-white text-xs px-3 py-1 rounded-full font-medium" 
+                                      style="background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});">
+                                    ${team.id.toUpperCase()}
+                                </span>
+                            </div>
+                            
+                            <!-- Indicador de colores del equipo -->
+                            <div class="mt-3 flex justify-center gap-1">
+                                <div class="w-3 h-3 rounded-full" style="background-color: ${primaryColor}"></div>
+                                <div class="w-3 h-3 rounded-full" style="background-color: ${secondaryColor}"></div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Formato legacy: { nombre, pais, pilotos }
+                    const pilotosHtml = team.pilotos ? team.pilotos.map(piloto => 
+                        `<li class="text-sm text-gray-400">${piloto.nombre} - ${piloto.puntos} pts</li>`
+                    ).join('') : '';
+                    
+                    card.innerHTML = `
+                        <div class="text-center">
+                            <!-- Logo placeholder para equipos legacy -->
+                            <div class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-white">${team.nombre.charAt(0)}</span>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-2">${team.nombre}</h3>
+                            <p class="text-gray-300 flex items-center justify-center gap-2 mb-3">
+                                <span class="text-lg">🌍</span>
+                                <span>${team.pais}</span>
+                            </p>
+                            ${pilotosHtml ? `
+                                <div class="text-left">
+                                    <h4 class="text-sm font-semibold text-gray-300 mb-2">Pilotos:</h4>
+                                    <ul class="space-y-1">
+                                        ${pilotosHtml}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                
+                return card;
+            }
+        };
+
+        // Variables globales
+        let allTeams = [];
+
+        // Funciones de alertas
+        function showInfoAlert(title, text = "") {
+            Swal.fire({
+                title,
+                text,
+                icon: 'info',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+
+        function showSuccessAlert(title, text = "") {
+            Swal.fire({
+                title,
+                text,
+                icon: 'success',
+                confirmButtonText: '¡Genial!',
+                confirmButtonColor: '#10b981'
+            });
+        }
+
+        function showErrorAlert(title, text = "") {
+            Swal.fire({
+                title,
+                text,
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+
+        // Manejadores de eventos
+        function handleShowTeams() {
+            try {
+                logger.info("Botón 'Mostrar Equipos' clickeado");
+                
+                const equiposContainer = document.getElementById("equiposContainer");
+                const btnMostrarEquipos = document.getElementById("btnMostrarEquipos");
+                
+                // Mostrar estado de carga
+                render.renderLoadingState(equiposContainer);
+                btnMostrarEquipos.disabled = true;
+                btnMostrarEquipos.textContent = "Cargando...";
+                
+                // Cargar equipos desde localStorage
+                allTeams = storage.getTeams();
+                
+                if (allTeams.length === 0) {
+                    showInfoAlert("No hay equipos disponibles", "Carga los equipos desde el botón 'Mostrar Equipos'");
+                    render.renderEmptyState("No hay equipos cargados", equiposContainer);
+                } else {
+                    render.renderTeams(allTeams, equiposContainer);
+                    showSuccessAlert(`${allTeams.length} equipos cargados`, "Los equipos se han cargado exitosamente");
+                }
+                
+            } catch (error) {
+                logger.error("Error al mostrar equipos:", error);
+                showErrorAlert("Error al cargar los equipos");
+                render.renderEmptyState("Error al cargar los equipos", document.getElementById("equiposContainer"));
+            } finally {
+                // Restaurar botón
+                const btnMostrarEquipos = document.getElementById("btnMostrarEquipos");
+                if (btnMostrarEquipos) {
+                    btnMostrarEquipos.disabled = false;
+                    btnMostrarEquipos.textContent = "Mostrar Equipos";
+                }
+            }
+        }
+
+        function handleSearch() {
+            try {
+                const buscadorEquipos = document.getElementById("buscadorEquipos");
+                const equiposContainer = document.getElementById("equiposContainer");
+                const searchTerm = buscadorEquipos.value.trim().toLowerCase();
+                
+                logger.info(`Buscando equipos con término: "${searchTerm}"`);
+                
+                if (!allTeams || allTeams.length === 0) {
+                    render.renderEmptyState("No hay equipos cargados", equiposContainer);
+                    return;
+                }
+                
+                if (searchTerm === "") {
+                    // Si no hay término de búsqueda, mostrar todos
+                    render.renderTeams(allTeams, equiposContainer);
+                    return;
+                }
+                
+                // Filtrar equipos por nombre (case-insensitive)
+                const filteredTeams = allTeams.filter(team => {
+                    const isNewFormat = team.hasOwnProperty('name') && team.hasOwnProperty('country');
+                    const teamName = isNewFormat ? team.name : team.nombre;
+                    return teamName.toLowerCase().includes(searchTerm);
+                });
+                
+                if (filteredTeams.length === 0) {
+                    render.renderEmptyState(`No se encontraron equipos con "${searchTerm}"`, equiposContainer);
+                    logger.info(`No se encontraron equipos para: "${searchTerm}"`);
+                } else {
+                    render.renderTeams(filteredTeams, equiposContainer);
+                    logger.info(`Se encontraron ${filteredTeams.length} equipos para: "${searchTerm}"`);
+                }
+                
+            } catch (error) {
+                logger.error("Error en la búsqueda:", error);
+                showErrorAlert("Error al realizar la búsqueda");
+            }
+        }
+
+        // Inicialización
+        document.addEventListener("DOMContentLoaded", () => {
+            try {
+                logger.info("Iniciando aplicación F1");
+                
+                // Inicializar datos semilla si es necesario
+                storage.seedIfEmpty();
+                
+                // Inicializar eventos
+                const btnMostrarEquipos = document.getElementById("btnMostrarEquipos");
+                const buscadorEquipos = document.getElementById("buscadorEquipos");
+                
+                if (btnMostrarEquipos) {
+                    btnMostrarEquipos.addEventListener("click", handleShowTeams);
+                }
+                
+                if (buscadorEquipos) {
+                    const debouncedSearch = debounce(handleSearch, 250);
+                    buscadorEquipos.addEventListener("input", debouncedSearch);
+                    
+                    buscadorEquipos.addEventListener("keypress", (e) => {
+                        if (e.key === "Enter") {
+                            handleSearch();
+                        }
+                    });
+                }
+                
+                logger.info("Aplicación inicializada correctamente");
+                
+            } catch (error) {
+                logger.error("Error al inicializar la aplicación:", error);
+                showErrorAlert("Error al inicializar la aplicación");
+            }
+        });
+    </script>
 </body>
 </html>
